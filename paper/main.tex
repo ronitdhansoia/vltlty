@@ -264,16 +264,16 @@ Table \ref{tab:main_results} presents our main forecasting results on the Bitcoi
 
 \begin{table}[H]
 \centering
-\caption{Forecasting Performance on Bitcoin Test Set}
+\caption{Forecasting Performance on Bitcoin Test Set (n=1,279)}
 \label{tab:main_results}
 \begin{tabular}{lcccc}
 \toprule
 Model & RMSE & MAE & $R^2$ & Correlation \\
 \midrule
-Moving Average & 0.619 & 0.456 & -0.384 & 0.291 \\
-LSTM (from scratch) & 0.264 & 0.139 & 0.749 & 0.880 \\
-\textbf{Transfer LSTM} & \textbf{0.235} & \textbf{0.137} & \textbf{0.801} & \textbf{0.908} \\
-HAR & 0.110 & 0.046 & 0.956 & 0.978 \\
+Moving Average & 0.6191 & 0.4565 & -0.384 & 0.291 \\
+LSTM (from scratch) & 0.2635 & 0.1390 & 0.749 & 0.880 \\
+\textbf{Transfer LSTM} & \textbf{0.2346} & \textbf{0.1368} & \textbf{0.801} & \textbf{0.908} \\
+HAR & 0.1098 & 0.0465 & 0.956 & 0.978 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -281,9 +281,9 @@ HAR & 0.110 & 0.046 & 0.956 & 0.978 \\
 Key findings:
 
 \begin{enumerate}
-    \item \textbf{Transfer learning improves neural network performance:} The transfer LSTM achieves 10.99\% lower RMSE than the LSTM trained from scratch (0.235 vs 0.264), demonstrating that volatility patterns learned from S\&P 500 data transfer beneficially to Bitcoin forecasting.
+    \item \textbf{Transfer learning improves neural network performance:} The transfer LSTM achieves 10.99\% lower RMSE than the LSTM trained from scratch (0.2346 vs 0.2635), demonstrating that volatility patterns learned from S\&P 500 data transfer beneficially to Bitcoin forecasting.
 
-    \item \textbf{HAR significantly outperforms neural networks:} Despite sophisticated architectures, the simple HAR model achieves substantially lower RMSE (0.110 vs 0.235), with $R^2 = 0.956$ compared to 0.801 for the transfer LSTM.
+    \item \textbf{HAR significantly outperforms neural networks:} Despite sophisticated architectures, the simple HAR model achieves substantially lower RMSE (0.1098 vs 0.2346), with $R^2 = 0.956$ compared to 0.801 for the transfer LSTM.
 
     \item \textbf{Neural networks capture non-trivial structure:} Both LSTM variants dramatically outperform the naive moving average baseline, indicating they learn meaningful volatility dynamics.
 \end{enumerate}
@@ -322,16 +322,16 @@ Given HAR's strong performance, we implemented several advanced architectures. T
 \toprule
 Model & RMSE & vs HAR (\%) & Key Finding \\
 \midrule
-HAR (Baseline) & 0.110 & -- & -- \\
+HAR (Baseline) & 0.1098 & -- & -- \\
 \midrule
 \multicolumn{4}{l}{\textit{Encoder Unfreezing Strategies}} \\
-Differential LR & 0.168 & -52.7\% & Overfitting \\
-Gradual Unfreezing & 0.155 & -40.9\% & Moderate improvement \\
-Aggressive Fine-tune & 0.145 & -31.8\% & Best unfreezing \\
+Differential LR & 0.1680 & -53.0\% & Overfitting \\
+Gradual Unfreezing & 0.1550 & -41.2\% & Moderate improvement \\
+Aggressive Fine-tune & 0.1448 & -31.9\% & Best unfreezing \\
 \midrule
 \multicolumn{4}{l}{\textit{Hybrid Architectures}} \\
 \textbf{HAR-LSTM Hybrid} & \textbf{0.1104} & \textbf{-0.55\%} & \textbf{Closest to HAR} \\
-Dynamic Attention & 0.117 & -6.85\% & Over-parameterized \\
+Dynamic Attention & 0.1173 & -6.83\% & Over-parameterized \\
 \midrule
 \multicolumn{4}{l}{\textit{Error Correction (Normalized Data)$^\dagger$}} \\
 Residual Boosting & -- & +0.01\% & Minimal correction \\
@@ -340,7 +340,7 @@ Transfer Residual & -- & +0.00\% & No benefit \\
 \bottomrule
 \end{tabular}
 \\[0.5em]
-\footnotesize{$^\dagger$ Error correction experiments used z-score normalized data with different absolute RMSE scale; relative improvements vs. HAR computed on same scale remain valid for comparison.}
+\footnotesize{$^\dagger$ Error correction models trained on z-score normalized data (mean=0, std=1). Percentage improvements relative to normalized HAR baseline remain valid for comparison.}
 \end{table}
 
 \subsection{Analysis of the HAR-LSTM Hybrid}
