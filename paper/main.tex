@@ -64,7 +64,7 @@ This paper makes the following contributions:
 
     \item We develop a transfer learning framework using LSTM networks with attention mechanisms. Contrary to expectations, we find that pre-training on S\&P 500 data does not improve Bitcoin volatility forecasting, with the transfer model performing comparably to training from scratch.
 
-    \item We provide extensive empirical evidence that the HAR model, despite its simplicity, is remarkably difficult to outperform with neural network approaches. Our best hybrid model achieves within 0.55\% of HAR performance.
+    \item We provide extensive empirical evidence that the HAR model, despite its simplicity, substantially outperforms all neural network approaches we tested.
 
     \item We systematically evaluate multiple advanced neural architectures including dynamic attention weighting, residual boosting, and regime-aware ensembles, providing insights into why neural networks struggle to improve upon HAR.
 \end{enumerate}
@@ -379,15 +379,14 @@ Table \ref{tab:dm_test} presents Diebold-Mariano test results comparing models t
 \toprule
 Model & DM Statistic & p-value \\
 \midrule
-Transfer LSTM & -7.63 & $< 0.001$ \\
-LSTM (scratch) & -7.31 & $< 0.001$ \\
-Moving Average & -18.26 & $< 0.001$ \\
-HAR-LSTM Hybrid & -0.42 & 0.674 \\
+Transfer LSTM & -7.69 & $< 0.001$ \\
+LSTM (scratch) & -7.30 & $< 0.001$ \\
+Moving Average & -19.95 & $< 0.001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The HAR-LSTM hybrid is the only model not statistically significantly different from HAR, confirming its competitive performance.
+All neural network models are statistically significantly worse than HAR, confirming HAR's dominant performance in volatility forecasting.
 
 %==============================================================================
 \section{Discussion}
@@ -400,9 +399,9 @@ Our findings have several practical implications:
 
 \textbf{1. HAR remains a strong benchmark:} Practitioners should not abandon HAR in favor of complex neural networks without careful evaluation. HAR's simplicity, interpretability, and robust performance make it an excellent choice for volatility forecasting.
 
-\textbf{2. Transfer learning adds value:} When neural networks are preferred (e.g., for capturing potential non-linearities or integrating with larger systems), transfer learning from related assets improves performance. Pre-training on liquid, data-rich markets benefits forecasting in newer or less liquid markets.
+\textbf{2. Cross-asset transfer may not help:} Our results show that pre-training on equity volatility does not improve cryptocurrency forecasting. Market microstructure differences may limit the transferability of learned patterns across asset classes.
 
-\textbf{3. Hybrid approaches offer flexibility:} The HAR-LSTM hybrid achieves near-HAR performance while allowing for neural network extensions (e.g., incorporating alternative data, uncertainty quantification).
+\textbf{3. Consider simpler models first:} The substantial gap between HAR and neural networks (RMSE 0.0844 vs 0.1491) suggests that practitioners should benchmark against HAR before deploying complex deep learning solutions.
 
 \subsection{Why Rough Volatility Favors HAR}
 
@@ -617,13 +616,6 @@ LR scheduler & ReduceLROnPlateau & ReduceLROnPlateau \\
 \includegraphics[width=0.9\textwidth]{../results/predictions_comparison.png}
 \caption{Comparison of model predictions (log RV) against actual Bitcoin realized volatility on the test set. Closer alignment to the diagonal indicates better predictive accuracy.}
 \label{fig:predictions}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{../results/hybrid_comparison.png}
-\caption{HAR-LSTM hybrid model results showing the learned combination weight $\alpha$ (HAR weight) and prediction performance. Left panel: weight evolution during training. Right panel: predicted vs. actual log RV on the test set.}
-\label{fig:hybrid}
 \end{figure}
 
 \end{document}
