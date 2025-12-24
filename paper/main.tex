@@ -36,7 +36,7 @@ Ronit Dhansoia\\
 \maketitle
 
 \begin{abstract}
-This paper investigates the application of transfer learning to rough volatility forecasting across traditional equity and cryptocurrency markets. We develop a neural network architecture combining LSTM encoders with attention mechanisms, pre-trained on S\&P 500 realized volatility and fine-tuned for Bitcoin volatility prediction. Our empirical analysis confirms that both markets exhibit rough volatility characteristics with Hurst parameters significantly below 0.5. While transfer learning improves neural network performance by 11\% in RMSE compared to training from scratch, we find that the Heterogeneous Autoregressive (HAR) model remains remarkably difficult to outperform. We explore multiple advanced architectures including dynamic attention mechanisms, residual boosting, and regime-aware ensembles, with our best hybrid HAR-LSTM model achieving performance statistically indistinguishable from HAR (Diebold-Mariano p-value = 0.674). Our findings suggest that HAR's multi-scale structure effectively captures the dominant patterns in rough volatility, and we discuss implications for practitioners and directions for future research.
+This paper investigates the application of transfer learning to rough volatility forecasting across traditional equity and cryptocurrency markets. We develop a neural network architecture combining LSTM encoders with attention mechanisms, pre-trained on S\&P 500 realized volatility and fine-tuned for Bitcoin volatility prediction. Our empirical analysis confirms that both markets exhibit rough volatility characteristics with Hurst parameters below 0.5 (S\&P 500: H = 0.468, Bitcoin: H = 0.353). Contrary to expectations, we find that transfer learning does not improve neural network performance over training from scratch on the target domain. More significantly, the simple Heterogeneous Autoregressive (HAR) model substantially outperforms all neural network approaches (RMSE 0.0844 vs 0.1491). Our findings suggest that HAR's multi-scale structure effectively captures the dominant patterns in rough volatility, leaving limited room for neural network improvements. We discuss implications for practitioners and directions for future research.
 
 \vspace{0.5em}
 \noindent\textbf{Keywords:} Rough volatility, Transfer learning, Cryptocurrency, HAR model, Deep learning, Realized volatility forecasting
@@ -62,7 +62,7 @@ This paper makes the following contributions:
 \begin{enumerate}
     \item We empirically confirm that both S\&P 500 and Bitcoin realized volatility exhibit rough characteristics, with Hurst parameters of 0.468 and 0.353 respectively (both $< 0.5$), consistent with the rough volatility literature.
 
-    \item We develop a transfer learning framework using LSTM networks with attention mechanisms, demonstrating that pre-training on S\&P 500 data improves Bitcoin volatility forecasting by approximately 11\% compared to training from scratch.
+    \item We develop a transfer learning framework using LSTM networks with attention mechanisms. Contrary to expectations, we find that pre-training on S\&P 500 data does not improve Bitcoin volatility forecasting, with the transfer model performing comparably to training from scratch.
 
     \item We provide extensive empirical evidence that the HAR model, despite its simplicity, is remarkably difficult to outperform with neural network approaches. Our best hybrid model achieves within 0.55\% of HAR performance.
 
@@ -276,10 +276,10 @@ Table \ref{tab:main_results} presents our main forecasting results on the Bitcoi
 \toprule
 Model & RMSE & MAE & $R^2$ & Correlation \\
 \midrule
-Moving Average & 0.6191 & 0.4565 & -0.384 & 0.291 \\
-LSTM (from scratch) & 0.2635 & 0.1390 & 0.749 & 0.880 \\
-\textbf{Transfer LSTM} & \textbf{0.2346} & \textbf{0.1368} & \textbf{0.801} & \textbf{0.908} \\
-HAR & 0.1098 & 0.0465 & 0.956 & 0.978 \\
+Moving Average & 0.4330 & 0.3438 & -0.462 & 0.261 \\
+LSTM (from scratch) & 0.1491 & 0.0974 & 0.827 & 0.909 \\
+Transfer LSTM & 0.1528 & 0.1001 & 0.818 & 0.906 \\
+\textbf{HAR} & \textbf{0.0844} & \textbf{0.0444} & \textbf{0.945} & \textbf{0.972} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -287,34 +287,34 @@ HAR & 0.1098 & 0.0465 & 0.956 & 0.978 \\
 Key findings:
 
 \begin{enumerate}
-    \item \textbf{Transfer learning improves neural network performance:} The transfer LSTM achieves 10.99\% lower RMSE than the LSTM trained from scratch (0.2346 vs 0.2635), demonstrating that volatility patterns learned from S\&P 500 data transfer beneficially to Bitcoin forecasting.
+    \item \textbf{Transfer learning does not improve neural network performance:} The transfer LSTM achieves slightly higher RMSE than the LSTM trained from scratch (0.1528 vs 0.1491), indicating that volatility patterns from S\&P 500 do not transfer beneficially to Bitcoin forecasting in this setting.
 
-    \item \textbf{HAR significantly outperforms neural networks:} Despite sophisticated architectures, the simple HAR model achieves substantially lower RMSE (0.1098 vs 0.2346), with $R^2 = 0.956$ compared to 0.801 for the transfer LSTM.
+    \item \textbf{HAR significantly outperforms neural networks:} Despite sophisticated architectures, the simple HAR model achieves substantially lower RMSE (0.0844 vs 0.1491), with $R^2 = 0.945$ compared to 0.827 for the LSTM.
 
-    \item \textbf{Neural networks capture non-trivial structure:} Both LSTM variants dramatically outperform the naive moving average baseline, indicating they learn meaningful volatility dynamics.
+    \item \textbf{Neural networks capture non-trivial structure:} Both LSTM variants dramatically outperform the naive moving average baseline (RMSE 0.433), indicating they learn meaningful volatility dynamics, though not as effectively as HAR.
 \end{enumerate}
 
 \subsection{Transfer Learning Analysis}
 
-Table \ref{tab:transfer_analysis} shows the improvement from transfer learning across different metrics.
+Table \ref{tab:transfer_analysis} shows the comparison between transfer learning and training from scratch.
 
 \begin{table}[H]
 \centering
-\caption{Transfer Learning Improvement over Training from Scratch}
+\caption{Transfer Learning vs. Training from Scratch}
 \label{tab:transfer_analysis}
 \begin{tabular}{lcc}
 \toprule
-Metric & Improvement (\%) & p-value \\
+Metric & Change (\%) & Interpretation \\
 \midrule
-RMSE & +10.99 & $< 0.001$ \\
-MAE & +1.57 & 0.042 \\
-$R^2$ & +6.95 & -- \\
-Correlation & +3.15 & $< 0.001$ \\
+RMSE & $-2.44$ & Slight degradation \\
+MAE & $-2.81$ & Slight degradation \\
+$R^2$ & $-1.04$ & Slight degradation \\
+Correlation & $-0.42$ & Slight degradation \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The improvements are statistically significant, confirming that cross-asset transfer learning provides genuine benefits for volatility forecasting.
+Contrary to expectations, transfer learning does not improve performance in this setting. The negative values indicate that pre-training on S\&P 500 data slightly hurts Bitcoin forecasting performance. This suggests that despite similar roughness characteristics, the specific patterns in equity volatility may not transfer beneficially to cryptocurrency markets.
 
 \subsection{Attempts to Beat HAR}
 
@@ -328,38 +328,32 @@ Given HAR's strong performance, we implemented several advanced architectures. T
 \toprule
 Model & RMSE & vs HAR (\%) & Key Finding \\
 \midrule
-HAR (Baseline) & 0.1098 & -- & -- \\
+HAR (Baseline) & 0.0844 & -- & -- \\
 \midrule
-\multicolumn{4}{l}{\textit{Encoder Unfreezing Strategies}} \\
-Differential LR & 0.1680 & -53.0\% & Overfitting \\
-Gradual Unfreezing & 0.1550 & -41.2\% & Moderate improvement \\
-Aggressive Fine-tune & 0.1448 & -31.9\% & Best unfreezing \\
-\midrule
-\multicolumn{4}{l}{\textit{Hybrid Architectures}} \\
-\textbf{HAR-LSTM Hybrid} & \textbf{0.1104} & \textbf{-0.55\%} & \textbf{Closest to HAR} \\
-Dynamic Attention & 0.1173 & -6.83\% & Over-parameterized \\
+\multicolumn{4}{l}{\textit{Neural Network Approaches}} \\
+LSTM (scratch) & 0.1491 & -76.7\% & Underperforms HAR \\
+Transfer LSTM & 0.1528 & -81.0\% & Transfer hurts \\
 \midrule
 \multicolumn{4}{l}{\textit{Error Correction (Normalized Data)$^\dagger$}} \\
 Residual Boosting & -- & +0.01\% & Minimal correction \\
 Regime Ensemble & -- & +0.18\% & Small improvement \\
-Transfer Residual & -- & +0.00\% & No benefit \\
 \bottomrule
 \end{tabular}
 \\[0.5em]
-\footnotesize{$^\dagger$ Error correction models trained on z-score normalized data (mean=0, std=1). Percentage improvements relative to normalized HAR baseline remain valid for comparison.}
+\footnotesize{$^\dagger$ Error correction models trained on z-score normalized data (mean=0, std=1). Percentage improvements relative to normalized HAR baseline.}
 \end{table}
 
-\subsection{Analysis of the HAR-LSTM Hybrid}
+\subsection{Analysis of Neural Network Limitations}
 
-Our best-performing model, the HAR-LSTM hybrid, learns a combination weight $\alpha = 0.886$, heavily favoring HAR predictions (Figure \ref{fig:hybrid}). This reveals that:
+The substantial gap between HAR and neural network performance reveals important insights:
 
 \begin{enumerate}
-    \item The neural network component provides marginal improvements by capturing non-linear patterns HAR misses
-    \item The optimal strategy is to use HAR as the primary predictor with neural network adjustments
-    \item Forcing larger neural network contributions degrades performance
+    \item Neural networks are unable to capture the multi-scale patterns that HAR encodes efficiently
+    \item Transfer learning from equity to cryptocurrency volatility does not provide benefits, possibly due to market microstructure differences
+    \item The gap between LSTM and HAR (RMSE 0.1491 vs 0.0844) is much larger than between Transfer and Scratch LSTM (0.1528 vs 0.1491)
 \end{enumerate}
 
-The learned weight converges quickly during training, reflecting the model's discovery that HAR captures most predictable variance.
+This suggests that the primary challenge is matching HAR's effectiveness, not the choice between transfer learning and training from scratch.
 
 \subsection{Why Neural Networks Struggle to Beat HAR}
 
@@ -458,9 +452,9 @@ Several extensions merit investigation:
 
 This paper investigates cross-asset transfer learning for rough volatility forecasting, with S\&P 500 as the source domain and Bitcoin as the target. Our analysis confirms that both assets exhibit rough volatility with Hurst parameters below 0.5 (S\&P 500: H = 0.468, Bitcoin: H = 0.353), consistent with the rough volatility paradigm.
 
-We demonstrate that transfer learning improves neural network forecasting performance by approximately 11\% compared to training from scratch, validating the hypothesis that volatility patterns transfer across asset classes. However, our comprehensive evaluation reveals that the simple HAR model remains remarkably difficult to outperform, achieving the lowest RMSE despite lacking the flexibility of neural networks.
+Contrary to our initial hypothesis, transfer learning does not improve neural network forecasting performance. The transfer LSTM (RMSE 0.1528) performs slightly worse than an LSTM trained from scratch (RMSE 0.1491), suggesting that volatility patterns from equity markets do not transfer beneficially to cryptocurrency forecasting. More importantly, our comprehensive evaluation reveals that the simple HAR model (RMSE 0.0844) substantially outperforms all neural network approaches.
 
-Through extensive experimentation with dynamic attention mechanisms, residual boosting, regime-aware ensembles, and hybrid architectures, we find that the closest approach to HAR performance comes from a hybrid model that learns to combine HAR predictions with neural network adjustments, achieving within 0.55\% of HAR's RMSE.
+Through extensive experimentation with various neural architectures and error correction methods, we find that HAR's multi-scale structure is remarkably effective at capturing the predictable patterns in volatility.
 
 Our findings suggest that HAR's multi-scale structure efficiently captures the dominant patterns in rough volatility, leaving limited room for neural network improvements. This has important implications for practitioners: while neural networks offer flexibility and can benefit from transfer learning, the simple HAR model remains a formidable benchmark that should not be dismissed in favor of more complex approaches without careful empirical validation.
 
