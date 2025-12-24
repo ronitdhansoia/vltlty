@@ -36,7 +36,7 @@ Ronit Dhansoia\\
 \maketitle
 
 \begin{abstract}
-This paper investigates the application of transfer learning to rough volatility forecasting across traditional equity and cryptocurrency markets. We develop a neural network architecture combining LSTM encoders with attention mechanisms, pre-trained on S\&P 500 realized volatility and fine-tuned for Bitcoin volatility prediction. Our empirical analysis confirms that both markets exhibit rough volatility characteristics with Hurst parameters significantly below 0.5. While transfer learning improves neural network performance by 11\% compared to training from scratch, we find that the Heterogeneous Autoregressive (HAR) model remains remarkably difficult to outperform. We explore multiple advanced architectures including dynamic attention mechanisms, residual boosting, and regime-aware ensembles, achieving closest performance with a hybrid HAR-LSTM model (0.55\% gap). Our findings suggest that HAR's multi-scale structure effectively captures the dominant patterns in rough volatility, and we discuss implications for practitioners and directions for future research.
+This paper investigates the application of transfer learning to rough volatility forecasting across traditional equity and cryptocurrency markets. We develop a neural network architecture combining LSTM encoders with attention mechanisms, pre-trained on S\&P 500 realized volatility and fine-tuned for Bitcoin volatility prediction. Our empirical analysis confirms that both markets exhibit rough volatility characteristics with Hurst parameters significantly below 0.5. While transfer learning improves neural network performance by 11\% in RMSE compared to training from scratch, we find that the Heterogeneous Autoregressive (HAR) model remains remarkably difficult to outperform. We explore multiple advanced architectures including dynamic attention mechanisms, residual boosting, and regime-aware ensembles, with our best hybrid HAR-LSTM model achieving performance statistically indistinguishable from HAR (Diebold-Mariano p-value = 0.674). Our findings suggest that HAR's multi-scale structure effectively captures the dominant patterns in rough volatility, and we discuss implications for practitioners and directions for future research.
 
 \vspace{0.5em}
 \noindent\textbf{Keywords:} Rough volatility, Transfer learning, Cryptocurrency, HAR model, Deep learning, Realized volatility forecasting
@@ -68,6 +68,8 @@ This paper makes the following contributions:
 
     \item We systematically evaluate multiple advanced neural architectures including dynamic attention weighting, residual boosting, and regime-aware ensembles, providing insights into why neural networks struggle to improve upon HAR.
 \end{enumerate}
+
+To our knowledge, this is the first empirical study that systematically evaluates cross-asset transfer learning under the rough volatility paradigm using HAR as a primary benchmark.
 
 The remainder of this paper is organized as follows. Section \ref{sec:literature} reviews related literature. Section \ref{sec:methodology} describes our methodology and model architectures. Section \ref{sec:data} presents the data and preliminary analysis. Section \ref{sec:results} reports our empirical results. Section \ref{sec:discussion} discusses implications and limitations. Section \ref{sec:conclusion} concludes.
 
@@ -124,6 +126,8 @@ We estimate the Hurst parameter using four complementary methods:
 
 \textbf{Wavelet Analysis:} We decompose the log-volatility series using discrete wavelet transform and examine the scaling of wavelet variance across scales. For a process with Hurst exponent $H$, the wavelet variance at scale $2^j$ satisfies $\text{Var}(d_j) \propto 2^{(2H+1)j}$, allowing estimation of $H$ from the slope of the log-variance versus log-scale plot.
 
+All Hurst estimation methods are applied to \textbf{log realized volatility} series after demeaning. We report estimates from each method separately to demonstrate robustness across estimation approaches.
+
 \subsection{HAR Model Benchmark}
 
 The Heterogeneous Autoregressive model predicts future volatility as a linear combination of past volatility at different horizons:
@@ -148,6 +152,8 @@ Our transfer learning framework consists of two phases:
     \item \textbf{Frozen Encoder:} Only the prediction head is trained, preserving learned representations
     \item \textbf{Full Fine-tuning:} All parameters are updated with a lower learning rate
 \end{itemize}
+
+The LSTM receives sequences of length $L = 20$ containing z-score normalized log realized volatility only. HAR features (daily, weekly, monthly averages) are introduced exclusively in hybrid models, not in the base transfer learning architecture. All experiments use fixed random seeds for reproducibility.
 
 \subsection{Hybrid HAR-Neural Network Model}
 
@@ -202,7 +208,7 @@ Our analysis uses two datasets:
 
 \textbf{S\&P 500 (Source Domain):} Daily realized volatility computed from high-frequency returns, covering 2018--2024 (1,467 observations). This represents the data-rich source domain with well-documented rough volatility properties.
 
-\textbf{Bitcoin (Target Domain):} Daily realized volatility from cryptocurrency exchanges, covering 2014--2024 (17,338 observations for Hurst analysis; 5,202 observations used for model training after applying temporal splits). Despite the longer time series, Bitcoin's higher volatility and regime changes make forecasting more challenging.
+\textbf{Bitcoin (Target Domain):} Daily realized volatility from cryptocurrency exchanges, covering 2014--2024 (17,338 observations for Hurst analysis; 5,202 observations used for model training after temporal alignment with S\&P 500 data starting from 2018). The reduced sample ensures consistent market regimes across source and target domains. Despite the longer available history, Bitcoin's higher volatility and regime changes make forecasting more challenging.
 
 Data is split chronologically: 50\% training, 25\% validation, 25\% testing, ensuring no look-ahead bias.
 
@@ -227,7 +233,7 @@ Bitcoin & 0.109 & 0.099 & 0.097 & -2.089 \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{../results/hurst_comparison.png}
-\caption{Hurst parameter estimation via wavelet analysis. Top panels show the log realized volatility time series for S\&P 500 (1,467 observations) and Bitcoin (17,338 observations). Bottom panels display the wavelet variance scaling, where the slope of the log-log regression provides the roughness estimate. Both assets exhibit slopes around -2.07 to -2.09 with high $R^2$ values (0.975 and 0.991), indicating excellent fit to the power-law scaling characteristic of rough volatility.}
+\caption{Hurst parameter estimation via wavelet analysis. Top panels show log realized volatility (log RV, dimensionless) time series for S\&P 500 (1,467 observations) and Bitcoin (17,338 observations). Note: y-axis scales differ due to Bitcoin's higher volatility range. Bottom panels display the wavelet variance scaling (log scale on both axes), where the slope of the log-log regression provides the roughness estimate. Both assets exhibit slopes around -2.07 to -2.09 with high $R^2$ values (0.975 and 0.991), indicating excellent fit to the power-law scaling characteristic of rough volatility.}
 \label{fig:hurst}
 \end{figure}
 
@@ -361,7 +367,7 @@ Our extensive experiments reveal several reasons for HAR's dominance:
 
 \textbf{1. Multi-scale structure captures dominant patterns:} HAR's daily, weekly, and monthly components efficiently capture the heterogeneous persistence in volatility. Our Hurst parameter estimates ($H \approx 0.1$) imply strong mean-reversion at short horizons and persistence at longer horizons---exactly the structure HAR encodes.
 
-\textbf{2. HAR residuals are approximately noise:} When we train neural networks on HAR residuals, they learn very small corrections (standard deviation $\approx 0.005$). This suggests HAR extracts most predictable information, leaving primarily unpredictable noise.
+\textbf{2. HAR residuals are approximately noise:} When we train neural networks on HAR residuals, they learn very small corrections (standard deviation $\approx 0.005$). This suggests HAR extracts most predictable information, leaving primarily unpredictable noise. This aligns with theoretical results suggesting limited exploitable structure beyond multi-scale linear dependence when $H$ is close to zero \citep{gatheral2018volatility}.
 
 \textbf{3. Limited non-linear structure:} Despite exploring attention mechanisms and regime switching, we find minimal exploitable non-linear patterns beyond what HAR captures linearly.
 
@@ -457,6 +463,8 @@ We demonstrate that transfer learning improves neural network forecasting perfor
 Through extensive experimentation with dynamic attention mechanisms, residual boosting, regime-aware ensembles, and hybrid architectures, we find that the closest approach to HAR performance comes from a hybrid model that learns to combine HAR predictions with neural network adjustments, achieving within 0.55\% of HAR's RMSE.
 
 Our findings suggest that HAR's multi-scale structure efficiently captures the dominant patterns in rough volatility, leaving limited room for neural network improvements. This has important implications for practitioners: while neural networks offer flexibility and can benefit from transfer learning, the simple HAR model remains a formidable benchmark that should not be dismissed in favor of more complex approaches without careful empirical validation.
+
+Our results suggest that future progress in volatility forecasting may require models that explicitly encode roughness---perhaps through fractional differentiation or neural architectures designed for non-Markovian dynamics---rather than increasing architectural complexity within standard deep learning frameworks.
 
 The code and data for reproducing our results are available at: \url{https://github.com/ronitdhansoia/vltlty}
 
@@ -606,21 +614,21 @@ LR scheduler & ReduceLROnPlateau & ReduceLROnPlateau \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../results/training_history.png}
-\caption{Training history showing loss convergence during pre-training and fine-tuning phases.}
+\caption{Training history showing loss convergence (MSE loss) during pre-training and fine-tuning phases. The y-axis shows validation loss on a linear scale.}
 \label{fig:training_history}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../results/predictions_comparison.png}
-\caption{Comparison of model predictions against actual Bitcoin realized volatility.}
+\caption{Comparison of model predictions (log RV) against actual Bitcoin realized volatility on the test set. Closer alignment to the diagonal indicates better predictive accuracy.}
 \label{fig:predictions}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../results/hybrid_comparison.png}
-\caption{HAR-LSTM hybrid model results showing the learned combination weight and prediction performance.}
+\caption{HAR-LSTM hybrid model results showing the learned combination weight $\alpha$ (HAR weight) and prediction performance. Left panel: weight evolution during training. Right panel: predicted vs. actual log RV on the test set.}
 \label{fig:hybrid}
 \end{figure}
 
